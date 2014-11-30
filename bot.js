@@ -22,6 +22,8 @@ var staff = null;
 var users = null;
 var roomScore = null;
 var afkList = {};
+var theme = "nothing yet.";
+var lockskip = null;
 
 //Event which triggers when the bot joins the room
 bot.on('roomJoin', function(data) {
@@ -109,6 +111,11 @@ bot.on('modSkip', function(data) {
     bot.getUsers(function(plugUsers){
         users = plugUsers;
     });
+    if (lockskip!=null){
+        bot.moderateAddDJ(lockskip[0]);
+        bot.moderateMoveDJ(lockskip[0], Number(lockskip[1]));
+        lockskip = null;
+    }
 });
 
 //Still figuring out how this works
@@ -144,7 +151,7 @@ bot.on('chat', function(data) {
             break;
         case "!theme":
         case ".theme":
-            bot.chat("We're using a custom theme for the event which is currently set to [will add later]");
+            bot.chat("We're using a custom theme for the event which is currently set to " + theme);
             break;
         case "!rules":
         case ".bot":
@@ -363,6 +370,20 @@ bot.on('chat', function(data) {
                 }
             }
             break;
+        case "!lockskip": //Skips the current song and sets the user back to the specified position 
+        case ".lockskip":
+            for (var i=0; i<staff.length; i++){
+                if (staff[i].username == data.un && staff[i].role > 1 && staff[i].role > 1){
+                    for (var j=0; j<users.length; j++){
+                        if (users[j].username == dj.username){
+                            lockskip = [dj.id, qualifier];
+                            bot.chat("Skipping!");
+                            bot.moderateForceSkip(dj.id);
+                        }
+                    }
+                }
+            }
+            break;
         case "!front": //Moves a user to the front of the waitlist with .front [givenUser]
         case ".front":
             for (var i=0; i<staff.length; i++){
@@ -392,6 +413,15 @@ bot.on('chat', function(data) {
             for (var i=0; i<staff.length; i++){
                 if (staff[i].username == data.un && staff[i].role > 1){
                     bot.moderateLockWaitList(false, false);
+                }
+            }
+            break;
+        case "!settheme": //Sets the theme message
+        case ".settheme":
+            for (var i=0; i<staff.length; i++){
+                if (staff[i].username == data.un && staff[i].role > 1){
+                    theme = qualifier;
+                    bot.chat("Theme now set to: " + theme);
                 }
             }
             break;
