@@ -1,4 +1,5 @@
 var PlugAPI = require('plugbotapi'); //Use 'git clone git@github.com:plugCubed/plugAPI.git' in your node_modules
+var request = require('request'); //Use 'npm install request'
 
 var bot = new PlugAPI({
     "email": "badaskbros@gmail.com",
@@ -20,6 +21,7 @@ var dj = null;
 var staff = null;
 var users = null;
 var roomScore = null;
+var afkList = {};
 
 //Event which triggers when the bot joins the room
 bot.on('roomJoin', function(data) {
@@ -162,7 +164,15 @@ bot.on('chat', function(data) {
             bot.chat("For plug's blog, go here: http://blog.plug.dj/");
             break;
         case "!soundcloud":
-            bot.chat("Check out *DJ*'s soundcloud here: [will add later]");
+            var link = 'http://api.soundcloud.com/users.json?q=' + dj.username + '&consumer_key=apigee';
+            request(link, function (error, response, body) {
+                if (!error && response.statusCode == 200) {
+                    var info = JSON.parse(body);
+                    if (info[0] != undefined){
+                        bot.chat("Check out " + dj.username + "'s soundcloud here: " + info[0].permalink_url);
+                    }
+                }
+            });
             break;
         case "!website":
             bot.chat("Check out our website here: http://rdjshowcase.net/");
@@ -176,12 +186,19 @@ bot.on('chat', function(data) {
         case "!info":
             bot.chat("For info on Showcase, go here: http://rdjshowcase.net/event");
             break;
+        case "!afk":
+            bot.setStatus(qualifier, function() {
+                afkList[data.un] = qualifier;
+                bot.chat(data.un + " is afk: " + qualifier);
+            });
+            break;
+        case "!back":
+            delete afkList[data.un];
+            bot.chat(data.un + " is back!");
+            break;
         case "!dc":
         case "!disconnected":
-            bot.chat("!dc");
-            break;
-        case "!afk":
-            bot.chat("!afk");
+            bot.chat("Still needs implementation.");
             break;
 
         //Res DJ+ Commands
@@ -206,6 +223,13 @@ bot.on('chat', function(data) {
             for (var i=0; i<staff.length; i++){
                 if (staff[i].username == data.un && staff[i].role > 0){
                     bot.chat("A Brand Ambassador is a global moderator which helps out plug. More info here: http://blog.plug.dj/brand-ambassadors/");
+                }
+            }
+            break;
+        case "!basoundcloud":
+            for (var i=0; i<staff.length; i++){
+                if (staff[i].username == data.un && staff[i].role > 0){
+                    bot.chat("Check out the BA's soundcloud here: https://soundcloud.com/plug-dj-bas");                
                 }
             }
             break;
@@ -322,7 +346,10 @@ bot.on('chat', function(data) {
                 }
             }
             break;
-        default: //Checks for users that are set to be autotranslated whenever they chat
+        default:
+            if (data.message.indexOf("@")!=-1 && data.message.slice(1).split(' ')[0] in afkList){ //Checks to see if the user is afk
+                bot.chat(data.message.slice(1).split(' ')[0] + " is afk: " + afkList[data.message.slice(1).split(' ')[0]]);
+            }
             break;
     }
 });
