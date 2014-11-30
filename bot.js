@@ -3,7 +3,7 @@ var request = require('request'); //Use 'npm install request'
 
 var bot = new PlugAPI({
     "email": "badaskbros@gmail.com",
-    "password": "xxx"
+    "password": "chewy767"
 });
 var ROOM = 'showcase';
 bot.connect(ROOM); // The part after https://plug.dj
@@ -312,64 +312,6 @@ bot.on('chat', function(data) {
                 }
             }
             break;
-        case "!add": //Adds a user to the waitlist
-        case ".add":
-            for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1){
-                    for (var j=0; j<users.length; j++){
-                        var spaceUsername = qualifier.split(' ')[0] + " " + qualifier.split(' ')[1]
-                        if (users[j].username == qualifier.split(' ')[0]){
-                            bot.moderateAddDJ(users[j].id);
-                        }
-                        else if (users[j].username == spaceUsername){
-                            bot.moderateAddDJ(users[j].id);
-                        }
-                    }
-                }
-            }
-            break;
-        case "!remove": //Removes a user from the waitlist
-        case ".remove":
-            for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1){
-                    for (var j=0; j<users.length; j++){
-                        var spaceUsername = qualifier.split(' ')[0] + " " + qualifier.split(' ')[1]
-                        if (users[j].username == qualifier.split(' ')[0]){
-                            bot.moderateRemoveDJ(users[j].id);
-                        }
-                        else if (users[j].username == spaceUsername){
-                            bot.moderateRemoveDJ(users[j].id);
-                        }
-                    }
-                }
-            }
-            break;
-        case "!move": //Moves a user in the waitlist with .move [givenUser], [givenSpot]
-        case ".move":
-            for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1 && staff[i].role > 1){
-                    for (var j=0; j<users.length; j++){
-                        var spaceUsername = qualifier.split(' ')[0] + " " + qualifier.split(' ')[1]
-                        if (users[j].username == qualifier.split(' ')[0]){
-                            if (Number(qualifier.split(' ')[1]) > waitlist.length){
-                                bot.chat("Sorry, there are only " + waitlist.length + " people in the waitlist, please try again.");
-                            }
-                            else{
-                                bot.moderateMoveDJ(users[j].id, Number(qualifier.split(' ')[1]));
-                            }
-                        }
-                        else if (users[j].username == spaceUsername){
-                            if (Number(qualifier.split(' ')[2]) > waitlist.length){
-                                bot.chat("Sorry, there are only " + waitlist.length + " people in the waitlist, please try again.");
-                            }
-                            else{
-                                bot.moderateMoveDJ(users[j].id, Number(qualifier.split(' ')[2]));
-                            }
-                        }
-                    }
-                }
-            }
-            break;
         case "!lockskip": //Skips the current song and sets the user back to the specified position 
         case ".lockskip":
             for (var i=0; i<staff.length; i++){
@@ -384,19 +326,100 @@ bot.on('chat', function(data) {
                 }
             }
             break;
+        case "!add": //Adds a user to the waitlist
+        case ".add":
+            for (var i=0; i<staff.length; i++){
+                if (staff[i].username == data.un && staff[i].role > 1){
+                    for (var j=0; j<users.length; j++){
+                        var spaceUsername = qualifier.slice(1).split(' ')[0] + " " + qualifier.slice(1).split(' ')[1]
+                        if (users[j].username == qualifier.slice(1).split(' ')[0]){
+                            bot.moderateAddDJ(users[j].id);
+                        }
+                        else if (users[j].username == spaceUsername){
+                            bot.moderateAddDJ(users[j].id);
+                        }
+                    }
+                }
+            }
+            break;
+        case "!remove": //Removes a user from the waitlist
+        case ".remove":
+            for (var i=0; i<staff.length; i++){
+                if (staff[i].username == data.un && staff[i].role > 1){
+                    for (var j=0; j<users.length; j++){
+                        var spaceUsername = qualifier.slice(1).split(' ')[0] + " " + qualifier.slice(1).split(' ')[1]
+                        if (users[j].username == qualifier.slice(1).split(' ')[0]){
+                            bot.moderateRemoveDJ(users[j].id);
+                        }
+                        else if (users[j].username == spaceUsername){
+                            bot.moderateRemoveDJ(users[j].id);
+                        }
+                    }
+                }
+            }
+            break;
+        case "!move": //Moves a user in the waitlist with .move [givenUser], [givenSpot]
+        case ".move":
+            for (var i=0; i<staff.length; i++){
+                if (staff[i].username == data.un && staff[i].role > 1 && staff[i].role > 1){
+                    for (var j=0; j<users.length; j++){
+                        var spaceUsername = qualifier.slice(1).split(' ')[0] + " " + qualifier.slice(1).split(' ')[1]
+                        if (users[j].username == qualifier.slice(1).split(' ')[0]){
+                            if (Number(qualifier.slice(1).split(' ')[1]) > waitlist.length){
+                                bot.chat("Sorry, there are only " + waitlist.length + " people in the waitlist, please try again.");
+                            }
+                            else{
+                                bot.moderateMoveDJ(users[j].id, Number(qualifier.slice(1).split(' ')[1]));
+                            }
+                        }
+                        else if (users[j].username == spaceUsername){
+                            if (Number(qualifier.slice(1).split(' ')[2]) > waitlist.length){
+                                bot.chat("Sorry, there are only " + waitlist.length + " people in the waitlist, please try again.");
+                            }
+                            else{
+                                bot.moderateMoveDJ(users[j].id, Number(qualifier.slice(1).split(' ')[2]));
+                            }
+                        }
+                    }
+                }
+            }
+            break;
         case "!front": //Moves a user to the front of the waitlist with .front [givenUser]
         case ".front":
             for (var i=0; i<staff.length; i++){
                 if (staff[i].username == data.un && staff[i].role > 1 && staff[i].role > 1){
                     for (var j=0; j<users.length; j++){
-                        var spaceUsername = qualifier.split(' ')[0] + " " + qualifier.split(' ')[1]
-                        if (users[j].username == qualifier.split(' ')[0]){
+                        var spaceUsername = qualifier.slice(1).split(' ')[0] + " " + qualifier.slice(1).split(' ')[1]
+                        if (users[j].username == qualifier.slice(1).split(' ')[0]){
                             bot.moderateMoveDJ(users[j].id, 1);
                         }
                         else if (users[j].username == spaceUsername){
                             bot.moderateMoveDJ(users[j].id, 1);
                         }
                     }
+                }
+            }
+            break;
+        case "!swap": //Swaps two users' spots on the wait list
+        case ".swap":
+            for (var i=0; i<staff.length; i++){
+                if (staff[i].username == data.un && staff[i].role > 1 && staff[i].role > 1){
+                    var user1 = qualifier.split(/@(.+)?/)[1].slice(0, qualifier.split(/@(.+)?/)[1].indexOf("@") - 1);
+                    var user2 = qualifier.split(/@(.+)?/)[1].slice(qualifier.split(/@(.+)?/)[1].indexOf("@") + 1);
+                    var user1Spot = null;
+                    var user2Spot = null;
+                    var user1ID = null;
+                    var user2ID = null;
+                    for (var j=0; j<waitlist.length; j++){
+                        if (waitlist[j].username == user1){
+                            user1Spot = j + 1;
+                        }
+                        else if (waitlist[j].username == user2){
+                            user2Spot = j + 1;
+                        }
+                    }
+                    bot.moderateMoveDJ(user1ID, user2Spot);
+                    bot.moderateMoveDJ(user2ID, user1Spot);
                 }
             }
             break;
