@@ -223,7 +223,7 @@ bot.on('chat', function(data) {
         case "!disconnected":
         case ".dc":
         case ".disconnected":
-            bot.chat("Still needs implementation.");
+            
             break;
 
         //Res DJ+ Commands
@@ -503,6 +503,36 @@ bot.on('chat', function(data) {
                 }
             }
             break;
+        case ".mute":
+            for (var i=0; i<staff.length; i++){
+                if (staff[i].username == data.un && staff[i].role > 1){
+                    for (var j=0; j<users.length; j++){
+                        if (users[j].username == qualifier){
+                            bot.moderateMuteUser(users[j].id);
+                        }
+                    }
+                }
+            }
+        case ".unmute":
+            for (var i=0; i<staff.length; i++){
+                if (staff[i].username == data.un && staff[i].role > 1){
+                    for (var j=0; j<users.length; j++){
+                        if (users[j].username == qualifier){
+                            bot.moderateUnmuteUser(users[j].id);
+                        }
+                    }
+                }
+            }
+        case ".delete":
+            for (var i=0; i<staff.length; i++){
+                if (staff[i].username == data.un && staff[i].role > 1){
+                    for (var j=0; j<users.length; j++){
+                        if (users[j].username == qualifier){
+                            bot.moderateDeleteChat(users[j].id, data.cid)
+                        }
+                    }
+                }
+            }
         default:
             if (data.message.indexOf("@")!=-1){ //Checks to see if the user is afk
                 var spaceUsername = data.message.slice(data.message.indexOf("@") + 1).split(' ')[0] + " " + data.message.slice(data.message.indexOf("@") + 1).split(' ')[1]
