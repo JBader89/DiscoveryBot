@@ -3,9 +3,9 @@ var request = require('request'); //Use 'npm install request'
 
 var bot = new PlugAPI({
     "email": "badaskbros@gmail.com",
-    "password": "chewy767"
+    "password": "xxx"
 });
-var ROOM = 'showcase';
+var ROOM = 'terminally-chillin';
 bot.connect(ROOM); // The part after https://plug.dj
 
 var reconnect = function() { 
@@ -24,6 +24,8 @@ var roomScore = null;
 var afkList = {};
 var theme = "nothing yet.";
 var lockskip = null;
+var bouncerCommandsEnabled = true;
+var userCommandsEnabled = true;
 
 //Event which triggers when the bot joins the room
 bot.on('roomJoin', function(data) {
@@ -73,6 +75,7 @@ bot.on('waitListUpdate', function(data) {
     bot.getUsers(function(plugUsers){
         users = plugUsers;
     });
+    //console.log(data);
 });
 
 //Event which triggers when user skips his song
@@ -116,6 +119,7 @@ bot.on('modSkip', function(data) {
         bot.moderateMoveDJ(lockskip[0], Number(lockskip[1]));
         lockskip = null;
     }
+    //console.log(data);
 });
 
 //Still figuring out how this works
@@ -136,6 +140,7 @@ bot.on('userJoin', function(data) {
 
 //Event which triggers when anyone chats
 bot.on('chat', function(data) {
+    console.log(data);
     var command=data.message.split(' ')[0];
     var firstIndex=data.message.indexOf(' ');
     var qualifier="";
@@ -144,87 +149,123 @@ bot.on('chat', function(data) {
     }
     switch (command)
     {
+        //Easter Eggs
+        case "!badask":
+            bot.chat("THIS SHIT IS BADASK BRO");
+            break;
+
         //User Commands
         case "!bot":
         case ".bot":
-            bot.chat("Well hey there! @"+data.un);
+            if (userCommandsEnabled){
+                bot.chat("Well hey there! @"+data.un);
+            }
             break;
         case "!theme":
         case ".theme":
-            bot.chat("We're using a custom theme for the event which is currently set to " + theme);
+            if (userCommandsEnabled){
+                bot.chat("We're using a custom theme for the event which is currently set to " + theme);
+            }
             break;
         case "!rules":
-        case ".bot":
-            bot.chat("Check out the room's rules here: http://rdjshowcase.net/rules");
+        case ".rules":
+            if (userCommandsEnabled){
+                bot.chat("Check out the room's rules here: http://rdjshowcase.net/rules");
+            }
             break;
         case "!commands":
         case ".commands":
-            bot.chat("Check out my commands here: http://rdjshowcase.net/commands");
+            if (userCommandsEnabled){
+                bot.chat("Check out my commands here: http://rdjshowcase.net/commands");
+            }
             break;
         case "!fb":
         case "!facebook":
         case ".fb":
         case ".facebook":
-            bot.chat("Check out plug's Facebook here: https://www.facebook.com/plugdj");
+            if (userCommandsEnabled){
+                bot.chat("Check out plug's Facebook here: https://www.facebook.com/plugdj");
+            }
             break;
         case "!twitter":
         case ".twitter":
-            bot.chat("Check out plug's Twitter here: https://twitter.com/plugdj");
+            if (userCommandsEnabled){
+                bot.chat("Check out plug's Twitter here: https://twitter.com/plugdj");
+            }
             break;
         case "!support":
         case ".support":
-            bot.chat("For plug's support, go here: http://support.plug.dj/");
+            if (userCommandsEnabled){
+                bot.chat("For plug's support, go here: http://support.plug.dj/");
+            }
             break;
         case "!blog":
         case ".blog":
-            bot.chat("For plug's blog, go here: http://blog.plug.dj/");
+            if (userCommandsEnabled){
+                bot.chat("For plug's blog, go here: http://blog.plug.dj/");
+            }
             break;
         case "!soundcloud":
         case ".soundcloud":
-            var link = 'http://api.soundcloud.com/users.json?q=' + dj.username + '&consumer_key=apigee';
-            request(link, function (error, response, body) {
-                if (!error && response.statusCode == 200) {
-                    var info = JSON.parse(body);
-                    if (info[0] != undefined){
-                        bot.chat("Check out " + dj.username + "'s soundcloud here: " + info[0].permalink_url);
+            if (userCommandsEnabled){
+                var link = 'http://api.soundcloud.com/users.json?q=' + dj.username + '&consumer_key=apigee';
+                request(link, function (error, response, body) {
+                    if (!error && response.statusCode == 200) {
+                        var info = JSON.parse(body);
+                        if (info[0] != undefined){
+                            bot.chat("Check out " + dj.username + "'s soundcloud here: " + info[0].permalink_url);
+                        }
                     }
-                }
-            });
+                });
+            }
             break;
         case "!website":
         case ".website":
-            bot.chat("Check out our website here: http://rdjshowcase.net/");
+            if (userCommandsEnabled){
+                bot.chat("Check out our website here: http://rdjshowcase.net/");
+            }
             break;
         case "!register":
         case ".register":
-            bot.chat("Register for the Showcase here: http://rdjshowcase.net/register");
+            if (userCommandsEnabled){
+                bot.chat("Register for the Showcase here: http://rdjshowcase.net/register");
+            }
             break;
         case "!lateregister":
         case ".lateregister":
-            bot.chat("If you're late to the Showcase, register here: [will add later]");
+            if (userCommandsEnabled){
+                bot.chat("If you're late to the Showcase, register here: [will add later]");
+            }
             break;
         case "!info":
         case ".info":
-            bot.chat("For info on Showcase, go here: http://rdjshowcase.net/event");
+            if (userCommandsEnabled){
+                bot.chat("For info on Showcase, go here: http://rdjshowcase.net/event");
+            }
             break;
         case "!afk":
         case ".afk":
-            bot.setStatus(qualifier, function() {
-                afkList[data.un] = qualifier;
-                bot.chat(data.un + " is afk: " + qualifier);
-            });
+            if (userCommandsEnabled){
+                bot.setStatus(qualifier, function() {
+                    afkList[data.un] = qualifier;
+                    bot.chat(data.un + " is afk: " + qualifier);
+                });
+            }
             break;
         case "!back":
         case ".back":
-            delete afkList[data.un];
-            bot.chat(data.un + " is back!");
+            if (userCommandsEnabled){
+                delete afkList[data.un];
+                bot.chat(data.un + " is back!");
+            }
             break;
-        case "!dc":
-        case "!disconnected":
-        case ".dc":
-        case ".disconnected":
+
+        // case "!dc":
+        // case "!disconnected":
+        // case ".dc":
+        // case ".disconnected":
             
-            break;
+        //     break;
 
         //Res DJ+ Commands
         case "!rdj":
@@ -291,14 +332,10 @@ bot.on('chat', function(data) {
             break;
 
         //Bouncer+ Commands
-            // for (var i=0; i<staff.length; i++){
-            //     if (staff[i].username == data.un && staff[i].role > 1){
-            //     }
-            // }
          case "!ping":
          case ".ping":
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1){
+                if (staff[i].username == data.un && staff[i].role > 1 && bouncerCommandsEnabled){
                     bot.chat("pong!");
                 }
             }
@@ -306,7 +343,7 @@ bot.on('chat', function(data) {
         case "!skip": //Makes the bot skip the current song
         case ".skip":
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1){
+                if (staff[i].username == data.un && staff[i].role > 1 && bouncerCommandsEnabled){
                     bot.chat("Skipping!");
                     bot.moderateForceSkip(dj.id);
                 }
@@ -315,7 +352,7 @@ bot.on('chat', function(data) {
         case "!lockskip": //Skips the current song and sets the user back to the specified position 
         case ".lockskip":
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1 && staff[i].role > 1){
+                if (staff[i].username == data.un && staff[i].role > 1 && bouncerCommandsEnabled){
                     for (var j=0; j<users.length; j++){
                         if (users[j].username == dj.username){
                             lockskip = [dj.id, qualifier];
@@ -329,7 +366,7 @@ bot.on('chat', function(data) {
         case "!add": //Adds a user to the waitlist
         case ".add":
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1){
+                if (staff[i].username == data.un && staff[i].role > 1 && bouncerCommandsEnabled){
                     for (var j=0; j<users.length; j++){
                         var spaceUsername = qualifier.slice(1).split(' ')[0] + " " + qualifier.slice(1).split(' ')[1]
                         if (users[j].username == qualifier.slice(1).split(' ')[0]){
@@ -345,7 +382,7 @@ bot.on('chat', function(data) {
         case "!remove": //Removes a user from the waitlist
         case ".remove":
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1){
+                if (staff[i].username == data.un && staff[i].role > 1 && bouncerCommandsEnabled){
                     for (var j=0; j<users.length; j++){
                         var spaceUsername = qualifier.slice(1).split(' ')[0] + " " + qualifier.slice(1).split(' ')[1]
                         if (users[j].username == qualifier.slice(1).split(' ')[0]){
@@ -361,7 +398,7 @@ bot.on('chat', function(data) {
         case "!move": //Moves a user in the waitlist with .move [givenUser], [givenSpot]
         case ".move":
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1 && staff[i].role > 1){
+                if (staff[i].username == data.un && staff[i].role > 1 && bouncerCommandsEnabled){
                     for (var j=0; j<users.length; j++){
                         var spaceUsername = qualifier.slice(1).split(' ')[0] + " " + qualifier.slice(1).split(' ')[1]
                         if (users[j].username == qualifier.slice(1).split(' ')[0]){
@@ -387,7 +424,7 @@ bot.on('chat', function(data) {
         case "!front": //Moves a user to the front of the waitlist with .front [givenUser]
         case ".front":
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1 && staff[i].role > 1){
+                if (staff[i].username == data.un && staff[i].role > 1 && bouncerCommandsEnabled){
                     for (var j=0; j<users.length; j++){
                         var spaceUsername = qualifier.slice(1).split(' ')[0] + " " + qualifier.slice(1).split(' ')[1]
                         if (users[j].username == qualifier.slice(1).split(' ')[0]){
@@ -403,9 +440,10 @@ bot.on('chat', function(data) {
         case "!swap": //Swaps two users' spots on the wait list
         case ".swap":
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1 && staff[i].role > 1){
+                if (staff[i].username == data.un && staff[i].role > 1 && bouncerCommandsEnabled){
                     var user1 = qualifier.split(/@(.+)?/)[1].slice(0, qualifier.split(/@(.+)?/)[1].indexOf("@") - 1);
                     var user2 = qualifier.split(/@(.+)?/)[1].slice(qualifier.split(/@(.+)?/)[1].indexOf("@") + 1);
+                    user2 = user2.replace(/\s/g, '');
                     var user1Spot = null;
                     var user2Spot = null;
                     var user1ID = null;
@@ -413,9 +451,11 @@ bot.on('chat', function(data) {
                     for (var j=0; j<waitlist.length; j++){
                         if (waitlist[j].username == user1){
                             user1Spot = j + 1;
+                            user1ID = waitlist[j].id;
                         }
                         else if (waitlist[j].username == user2){
                             user2Spot = j + 1;
+                            user2ID = waitlist[j].id;
                         }
                     }
                     bot.moderateMoveDJ(user1ID, user2Spot);
@@ -426,7 +466,7 @@ bot.on('chat', function(data) {
         case "!lock": //Locks the waitlist
         case ".lock":
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1){
+                if (staff[i].username == data.un && staff[i].role > 1 && bouncerCommandsEnabled){
                     bot.moderateLockWaitList(true, false);
                 }
             }
@@ -434,7 +474,7 @@ bot.on('chat', function(data) {
         case "!unlock": //Unlocks the waitlist
         case ".unlock":
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1){
+                if (staff[i].username == data.un && staff[i].role > 1 && bouncerCommandsEnabled){
                     bot.moderateLockWaitList(false, false);
                 }
             }
@@ -442,28 +482,150 @@ bot.on('chat', function(data) {
         case "!settheme": //Sets the theme message
         case ".settheme":
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1){
+                if (staff[i].username == data.un && staff[i].role > 1 && bouncerCommandsEnabled){
                     theme = qualifier;
                     bot.chat("Theme now set to: " + theme);
                 }
             }
             break;
+
+        // case "!unmute": //WIP
+        // case ".unmute":
+        //     for (var i=0; i<staff.length; i++){
+        //         if (staff[i].username == data.un && staff[i].role > 1 && bouncerCommandsEnabled){
+        //             for (var j=0; j<users.length; j++){
+        //                 if (users[j].username == qualifier){
+        //                     bot.moderateUnmuteUser(users[j].id);
+        //                 }
+        //             }
+        //         }
+        //     }
+        //     break;
+        // case "!delete": //WIP
+        // case ".delete":
+        //     for (var i=0; i<staff.length; i++){
+        //         if (staff[i].username == data.un && staff[i].role > 1 && bouncerCommandsEnabled){
+        //             for (var j=0; j<users.length; j++){
+        //                 if (users[j].username == qualifier){
+        //                     bot.moderateDeleteChat(users[j].id, data.cid)
+        //                 }
+        //             }
+        //         }
+        //     }
+        //     break;
+
+        case "!kick": //Kicks the user from the room for the selected time (hour/day)
+        case ".kick": 
+            for (var i=0; i<staff.length; i++){
+                if (staff[i].username == data.un && staff[i].role > 1 && bouncerCommandsEnabled){
+                    for (var j=0; j<users.length; j++){
+                        var spaceUsername = qualifier.slice(1).split(' ')[0] + " " + qualifier.slice(1).split(' ')[1]
+                        if (users[j].username == qualifier.slice(1).split(' ')[0]){
+                            if (qualifier.slice(1).split(' ')[1] == "hour"){
+                                bot.moderateBanUser(users[j].id, 1, bot.API.BAN.HOUR);
+                            }
+                            else if (qualifier.slice(1).split(' ')[1] == "day"){
+                                bot.moderateBanUser(users[j].id, 1, bot.API.BAN.DAY);
+                            }
+                        }
+                        else if (users[j].username == spaceUsername){
+                            if (qualifier.slice(1).split(' ')[2] == "hour"){
+                                bot.moderateBanUser(users[j].id, 1, bot.API.BAN.HOUR);
+                            }
+                            else if (qualifier.slice(1).split(' ')[2] == "day"){
+                                bot.moderateBanUser(users[j].id, 1, bot.API.BAN.DAY);
+                            }
+                        }
+                    }
+                }
+            }
+            break;
+        case "!mute": //Mutes the user for the selected time (15/30/45)
+        case ".mute": 
+            for (var i=0; i<staff.length; i++){
+                if (staff[i].username == data.un && staff[i].role > 1 && bouncerCommandsEnabled){
+                    for (var j=0; j<users.length; j++){
+                        var spaceUsername = qualifier.slice(1).split(' ')[0] + " " + qualifier.slice(1).split(' ')[1]
+                        if (users[j].username == qualifier.slice(1).split(' ')[0]){
+                            if (Number(qualifier.slice(1).split(' ')[1]) == 15){
+                                console.log(users[j].id);
+                                bot.moderateMuteUser(users[j].id, bot.API.MUTE.LONG, 1);
+                            }
+                            else if (Number(qualifier.slice(1).split(' ')[1]) == 30){
+                                console.log(users[j].id);
+                                bot.moderateMuteUser(users[j].id);
+                            }
+                            else if (Number(qualifier.slice(1).split(' ')[1]) == 45){
+                                console.log(users[j].id);
+                                bot.moderateMuteUser(users[j].id, 1, bot.API.MUTE.LONG);
+                            }
+                        }
+                        else if (users[j].username == spaceUsername){
+                            if (Number(qualifier.slice(1).split(' ')[2]) == 15){
+                                bot.moderateMuteUser(users[j].id, 1, bot.API.MUTE.SHORT);
+                            }
+                            else if (Number(qualifier.slice(1).split(' ')[2]) == 30){
+                                bot.moderateMuteUser(users[j].id, 1, bot.API.MUTE.MEDIUM);
+                            }
+                            else if (Number(qualifier.slice(1).split(' ')[2]) == 45){
+                                bot.moderateMuteUser(users[j].id, 1, bot.API.MUTE.LONG);
+                            }
+                        }
+                    }
+                }
+            }
+            break;
+
+        //Manager+ Commands
+        case "!ban": //Permanently bans the user
+        case ".ban": 
+            for (var i=0; i<staff.length; i++){
+                if (staff[i].username == data.un && staff[i].role > 2){
+                    for (var j=0; j<users.length; j++){
+                        if (users[j].username == qualifier.slice(1).trim()){
+                            bot.moderateBanUser(users[j].id);
+                        }
+                    }
+                }
+            }
+            break;
+        case "!unban": //Unbans the user
+        case ".unban": 
+            for (var i=0; i<staff.length; i++){
+                if (staff[i].username == data.un && staff[i].role > 2){
+                    for (var j=0; j<users.length; j++){
+                        if (users[j].username == qualifier.slice(1).trim()){
+                            bot.moderateUnbanUser(users[j].id);
+                        }
+                    }
+                }
+            }
+            break;
+        case "!bouncer+": //Toggles on/off bouncer+ commands the bouncer+ commands
+        case ".bouncer+": 
+            if (bouncerCommandsEnabled){
+                bouncerCommandsEnabled = false;
+            }
+            else{
+                bouncerCommandsEnabled = true;
+            }
+            break;
+        case "!user+": //Disables/Enables user commands
+        case ".user+": 
+            if (userCommandsEnabled){
+                userCommandsEnabled = false;
+            }
+            else{
+                userCommandsEnabled = true;
+            }
+            break;
+
+        //GeniusBot Commands, just used for reference
         case ".warn": //Skips a user playing an off-genre song
             for (var i=0; i<staff.length; i++){
                 if (staff[i].username == data.un && staff[i].role > 1){
                     bot.chat("@" + dj.username + " Your tune does not fall within the established genre of the Chillout Mixer. Please type .noplay or .yesplay for more info.");
                     bot.moderateForceSkip(dj.id);
-                }
-            }
-            break;
-        case ".banuser": //Bans a user from the room permanently with .banuser [givenUser]
-            for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1){
-                    for (var j=0; j<users.length; j++){
-                        if (users[j].username == qualifier){
-                            bot.moderateBanUser(users[j].id);
-                        }
-                    }
                 }
             }
             break;
@@ -503,36 +665,6 @@ bot.on('chat', function(data) {
                 }
             }
             break;
-        case ".mute":
-            for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1){
-                    for (var j=0; j<users.length; j++){
-                        if (users[j].username == qualifier){
-                            bot.moderateMuteUser(users[j].id);
-                        }
-                    }
-                }
-            }
-        case ".unmute":
-            for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1){
-                    for (var j=0; j<users.length; j++){
-                        if (users[j].username == qualifier){
-                            bot.moderateUnmuteUser(users[j].id);
-                        }
-                    }
-                }
-            }
-        case ".delete":
-            for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1){
-                    for (var j=0; j<users.length; j++){
-                        if (users[j].username == qualifier){
-                            bot.moderateDeleteChat(users[j].id, data.cid)
-                        }
-                    }
-                }
-            }
         default:
             if (data.message.indexOf("@")!=-1){ //Checks to see if the user is afk
                 var spaceUsername = data.message.slice(data.message.indexOf("@") + 1).split(' ')[0] + " " + data.message.slice(data.message.indexOf("@") + 1).split(' ')[1]
