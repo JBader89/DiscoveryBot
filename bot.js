@@ -26,6 +26,7 @@ var theme = "nothing yet.";
 var lockskip = null;
 var bouncerCommandsEnabled = true;
 var userCommandsEnabled = true;
+var chatQueue = [];
 
 //Event which triggers when the bot joins the room
 bot.on('roomJoin', function(data) {
@@ -140,7 +141,12 @@ bot.on('userJoin', function(data) {
 
 //Event which triggers when anyone chats
 bot.on('chat', function(data) {
-    console.log(data);
+    //console.log(data);
+    chatQueue.push(data.chatID);
+    if (chatQueue.length > 100){
+        chatQueue.shift();
+    }
+
     var command=data.message.split(' ')[0];
     var firstIndex=data.message.indexOf(' ');
     var qualifier="";
@@ -151,7 +157,9 @@ bot.on('chat', function(data) {
     {
         //Easter Eggs
         case "!badask":
-            bot.chat("THIS SHIT IS BADASK BRO");
+            if (data.id == 3537523 || data.id == 3566839){
+                bot.chat("THIS SHIT IS BADASK BRO");
+            }
             break;
 
         //User Commands
@@ -368,7 +376,7 @@ bot.on('chat', function(data) {
             for (var i=0; i<staff.length; i++){
                 if (staff[i].username == data.un && staff[i].role > 1 && bouncerCommandsEnabled){
                     for (var j=0; j<users.length; j++){
-                        var spaceUsername = qualifier.slice(1).split(' ')[0] + " " + qualifier.slice(1).split(' ')[1]
+                        var spaceUsername = qualifier.slice(1).split(' ')[0] + " " + qualifier.slice(1).split(' ')[1];
                         if (users[j].username == qualifier.slice(1).split(' ')[0]){
                             bot.moderateAddDJ(users[j].id);
                         }
@@ -384,7 +392,7 @@ bot.on('chat', function(data) {
             for (var i=0; i<staff.length; i++){
                 if (staff[i].username == data.un && staff[i].role > 1 && bouncerCommandsEnabled){
                     for (var j=0; j<users.length; j++){
-                        var spaceUsername = qualifier.slice(1).split(' ')[0] + " " + qualifier.slice(1).split(' ')[1]
+                        var spaceUsername = qualifier.slice(1).split(' ')[0] + " " + qualifier.slice(1).split(' ')[1];
                         if (users[j].username == qualifier.slice(1).split(' ')[0]){
                             bot.moderateRemoveDJ(users[j].id);
                         }
@@ -400,7 +408,7 @@ bot.on('chat', function(data) {
             for (var i=0; i<staff.length; i++){
                 if (staff[i].username == data.un && staff[i].role > 1 && bouncerCommandsEnabled){
                     for (var j=0; j<users.length; j++){
-                        var spaceUsername = qualifier.slice(1).split(' ')[0] + " " + qualifier.slice(1).split(' ')[1]
+                        var spaceUsername = qualifier.slice(1).split(' ')[0] + " " + qualifier.slice(1).split(' ')[1];
                         if (users[j].username == qualifier.slice(1).split(' ')[0]){
                             if (Number(qualifier.slice(1).split(' ')[1]) > waitlist.length){
                                 bot.chat("Sorry, there are only " + waitlist.length + " people in the waitlist, please try again.");
@@ -426,7 +434,7 @@ bot.on('chat', function(data) {
             for (var i=0; i<staff.length; i++){
                 if (staff[i].username == data.un && staff[i].role > 1 && bouncerCommandsEnabled){
                     for (var j=0; j<users.length; j++){
-                        var spaceUsername = qualifier.slice(1).split(' ')[0] + " " + qualifier.slice(1).split(' ')[1]
+                        var spaceUsername = qualifier.slice(1).split(' ')[0] + " " + qualifier.slice(1).split(' ')[1];
                         if (users[j].username == qualifier.slice(1).split(' ')[0]){
                             bot.moderateMoveDJ(users[j].id, 1);
                         }
@@ -501,25 +509,32 @@ bot.on('chat', function(data) {
         //         }
         //     }
         //     break;
-        // case "!delete": //WIP
-        // case ".delete":
-        //     for (var i=0; i<staff.length; i++){
-        //         if (staff[i].username == data.un && staff[i].role > 1 && bouncerCommandsEnabled){
-        //             for (var j=0; j<users.length; j++){
-        //                 if (users[j].username == qualifier){
-        //                     bot.moderateDeleteChat(users[j].id, data.cid)
-        //                 }
-        //             }
-        //         }
-        //     }
-        //     break;
+
+        case "!delete":
+        case ".delete":
+            for (var i=0; i<staff.length; i++){
+                if (staff[i].username == data.un && staff[i].role > 1 && bouncerCommandsEnabled){
+                    for (var j=0; j<users.length; j++){
+                        if (users[j].username == qualifier.slice(1).trim()){
+                            for (var k=chatQueue.length - 1; k > -1; k--){
+                                if (users[j].id == chatQueue[k].slice(0, chatQueue[k].indexOf('-'))){
+                                    bot.moderateDeleteChat(chatQueue[k]);
+                                    chatQueue.splice(k, 1);
+                                    k = k + 1;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            break;
 
         case "!kick": //Kicks the user from the room for the selected time (hour/day)
         case ".kick": 
             for (var i=0; i<staff.length; i++){
                 if (staff[i].username == data.un && staff[i].role > 1 && bouncerCommandsEnabled){
                     for (var j=0; j<users.length; j++){
-                        var spaceUsername = qualifier.slice(1).split(' ')[0] + " " + qualifier.slice(1).split(' ')[1]
+                        var spaceUsername = qualifier.slice(1).split(' ')[0] + " " + qualifier.slice(1).split(' ')[1];
                         if (users[j].username == qualifier.slice(1).split(' ')[0]){
                             if (qualifier.slice(1).split(' ')[1] == "hour"){
                                 bot.moderateBanUser(users[j].id, 1, bot.API.BAN.HOUR);
@@ -545,7 +560,7 @@ bot.on('chat', function(data) {
             for (var i=0; i<staff.length; i++){
                 if (staff[i].username == data.un && staff[i].role > 1 && bouncerCommandsEnabled){
                     for (var j=0; j<users.length; j++){
-                        var spaceUsername = qualifier.slice(1).split(' ')[0] + " " + qualifier.slice(1).split(' ')[1]
+                        var spaceUsername = qualifier.slice(1).split(' ')[0] + " " + qualifier.slice(1).split(' ')[1];
                         if (users[j].username == qualifier.slice(1).split(' ')[0]){
                             if (Number(qualifier.slice(1).split(' ')[1]) == 15){
                                 console.log(users[j].id);
@@ -668,7 +683,7 @@ bot.on('chat', function(data) {
         default:
             if (data.message.indexOf("@")!=-1){ //Checks to see if the user is afk
                 var spaceUsername = data.message.slice(data.message.indexOf("@") + 1).split(' ')[0] + " " + data.message.slice(data.message.indexOf("@") + 1).split(' ')[1]
-                if (data.message.slice(data.message.indexOf("@") + 1).split(' ')[0] in afkList){
+                if (data.un != "DiscoverBot" && data.message.slice(data.message.indexOf("@") + 1).split(' ')[0] in afkList){
                     bot.chat("@" + data.un + " " + data.message.slice(data.message.indexOf("@") + 1).split(' ')[0] + " is afk: " + afkList[data.message.slice(data.message.indexOf("@") + 1).split(' ')[0]]);
                 }
                 else if (spaceUsername in afkList){
