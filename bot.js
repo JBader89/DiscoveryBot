@@ -26,12 +26,25 @@ var theme = "nothing yet.";
 var lockskip = null;
 var bouncerCommandsEnabled = true;
 var userCommandsEnabled = true;
+var autoskipEnabled = false;
+var lockdownEnabled = false;
 var chatQueue = [];
 
 //Event which triggers when the bot joins the room
 bot.on('roomJoin', function(data) {
     bot.getMedia(function(plugMedia){
         media = plugMedia;
+        bot.getTimeRemaining(function(timeRemaining){
+            var timer = setInterval(
+                function() {
+                    if (autoskipEnabled){
+                        bot.moderateForceSkip(dj.id);
+                        bot.chat("Autoskip!");
+                    }
+                    clearInterval(timer);
+                }, (timeRemaining * 1000)
+            );
+        });
     });
     bot.getWaitList(function(plugWaitlist){
         waitlist = plugWaitlist;
@@ -52,6 +65,15 @@ bot.on('roomJoin', function(data) {
 bot.on('advance', function(data) {
     bot.getMedia(function(plugMedia){
         media = plugMedia;
+        var timer = setInterval(
+            function() {
+                if (autoskipEnabled){
+                    bot.moderateForceSkip(dj.id);
+                    bot.chat("Autoskip!");
+                }
+                clearInterval(timer);
+            }, (media.duration * 1000)
+        );
     });
     bot.getWaitList(function(plugWaitlist){
         waitlist = plugWaitlist;
@@ -142,11 +164,27 @@ bot.on('userJoin', function(data) {
 //Event which triggers when anyone chats
 bot.on('chat', function(data) {
     //console.log(data);
+    if (lockdownEnabled){
+        var isInRoom = false;
+        var isStaffMember = false;
+        for (var j=0; j<users.length; j++){
+            if (users[j].username == data.un){
+                isInRoom = true;
+            }
+        }
+        for (var k=0; k<staff.length; k++){
+            if (staff[k].username == data.un){
+                isStaffMember = true;
+            }
+        }
+        if (isInRoom && !(isStaffMember)){
+            bot.moderateDeleteChat(data.chatID);
+        }
+    }
     chatQueue.push(data.chatID);
     if (chatQueue.length > 100){
         chatQueue.shift();
     }
-
     var command=data.message.split(' ')[0];
     var firstIndex=data.message.indexOf(' ');
     var qualifier="";
@@ -496,20 +534,6 @@ bot.on('chat', function(data) {
                 }
             }
             break;
-
-        // case "!unmute": //WIP
-        // case ".unmute":
-        //     for (var i=0; i<staff.length; i++){
-        //         if (staff[i].username == data.un && staff[i].role > 1 && bouncerCommandsEnabled){
-        //             for (var j=0; j<users.length; j++){
-        //                 if (users[j].username == qualifier){
-        //                     bot.moderateUnmuteUser(users[j].id);
-        //                 }
-        //             }
-        //         }
-        //     }
-        //     break;
-
         case "!delete":
         case ".delete":
             for (var i=0; i<staff.length; i++){
@@ -528,7 +552,21 @@ bot.on('chat', function(data) {
                 }
             }
             break;
-
+        case "!lockdown": 
+        case ".lockdown": 
+            for (var i=0; i<staff.length; i++){
+                if (staff[i].username == data.un && staff[i].role > 1 && bouncerCommandsEnabled){
+                    if (lockdownEnabled){
+                        bouncerCommandsEnabled = false;
+                        bot.chat("Staff-only chat disabled.");
+                    }
+                    else{
+                        lockdownEnabled = true;
+                        bot.chat("Staff-only chat enabled.");
+                    }
+                }
+            }
+            break;
         case "!kick": //Kicks the user from the room for the selected time (hour/day)
         case ".kick": 
             for (var i=0; i<staff.length; i++){
@@ -563,28 +601,37 @@ bot.on('chat', function(data) {
                         var spaceUsername = qualifier.slice(1).split(' ')[0] + " " + qualifier.slice(1).split(' ')[1];
                         if (users[j].username == qualifier.slice(1).split(' ')[0]){
                             if (Number(qualifier.slice(1).split(' ')[1]) == 15){
-                                console.log(users[j].id);
-                                bot.moderateMuteUser(users[j].id, bot.API.MUTE.LONG, 1);
+                                bot.moderateMuteUser(users[j].id, 3, bot.API.MUTE.SHORT);
                             }
                             else if (Number(qualifier.slice(1).split(' ')[1]) == 30){
-                                console.log(users[j].id);
-                                bot.moderateMuteUser(users[j].id);
+                                bot.moderateMuteUser(users[j].id, 3, bot.API.MUTE.MEDIUM);
                             }
                             else if (Number(qualifier.slice(1).split(' ')[1]) == 45){
-                                console.log(users[j].id);
-                                bot.moderateMuteUser(users[j].id, 1, bot.API.MUTE.LONG);
+                                bot.moderateMuteUser(users[j].id, 3, bot.API.MUTE.LONG);
                             }
                         }
                         else if (users[j].username == spaceUsername){
                             if (Number(qualifier.slice(1).split(' ')[2]) == 15){
-                                bot.moderateMuteUser(users[j].id, 1, bot.API.MUTE.SHORT);
+                                bot.moderateMuteUser(users[j].id, 3, bot.API.MUTE.SHORT);
                             }
                             else if (Number(qualifier.slice(1).split(' ')[2]) == 30){
-                                bot.moderateMuteUser(users[j].id, 1, bot.API.MUTE.MEDIUM);
+                                bot.moderateMuteUser(users[j].id, 3, bot.API.MUTE.MEDIUM);
                             }
                             else if (Number(qualifier.slice(1).split(' ')[2]) == 45){
-                                bot.moderateMuteUser(users[j].id, 1, bot.API.MUTE.LONG);
+                                bot.moderateMuteUser(users[j].id, 3, bot.API.MUTE.LONG);
                             }
+                        }
+                    }
+                }
+            }
+            break;
+        case "!unmute": //Unmutes the user
+        case ".unmute": 
+            for (var i=0; i<staff.length; i++){
+                if (staff[i].username == data.un && staff[i].role > 1 && bouncerCommandsEnabled){
+                    for (var j=0; j<users.length; j++){
+                        if (users[j].username == qualifier.slice(1).trim()){
+                            bot.moderateUnmuteUser(users[j].id);
                         }
                     }
                 }
@@ -618,20 +665,47 @@ bot.on('chat', function(data) {
             break;
         case "!bouncer+": //Toggles on/off bouncer+ commands the bouncer+ commands
         case ".bouncer+": 
-            if (bouncerCommandsEnabled){
-                bouncerCommandsEnabled = false;
-            }
-            else{
-                bouncerCommandsEnabled = true;
+            for (var i=0; i<staff.length; i++){
+                if (staff[i].username == data.un && staff[i].role > 2){
+                    if (bouncerCommandsEnabled){
+                        bouncerCommandsEnabled = false;
+                        bot.chat("Bouncer commands disabled.");
+                    }
+                    else{
+                        bouncerCommandsEnabled = true;
+                        bot.chat("Bouncer commands enabled.");
+                    }
+                }
             }
             break;
         case "!user+": //Disables/Enables user commands
-        case ".user+": 
-            if (userCommandsEnabled){
-                userCommandsEnabled = false;
+        case ".user+":
+            for (var i=0; i<staff.length; i++){
+                if (staff[i].username == data.un && staff[i].role > 2){ 
+                    if (userCommandsEnabled){
+                        userCommandsEnabled = false;
+                        bot.chat("User commands disabled.");
+                    }
+                    else{
+                        userCommandsEnabled = true;
+                        bot.chat("User commands enabled.");
+                    }
+                }
             }
-            else{
-                userCommandsEnabled = true;
+            break;
+        case "!autoskip": //Unbans the user
+        case ".autoskip": 
+            for (var i=0; i<staff.length; i++){
+                if (staff[i].username == data.un && staff[i].role > 2){ 
+                    if (autoskipEnabled){
+                        autoskipEnabled = false;
+                        bot.chat("Autoskip disabled.");
+                    }
+                    else{
+                        autoskipEnabled = true;
+                        bot.chat("Autoskip enabled.");
+                    }
+                }
             }
             break;
 
