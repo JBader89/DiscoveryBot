@@ -1,3 +1,4 @@
+//TODO: 1. add messages, 2. add comments, 3. fix !clearchat, 4. add !status, 5. make cooldown, 6. make BAs bouncers
 var PlugAPI = require('plugbotapi'); //Use 'git clone git@github.com:plugCubed/plugAPI.git' in your node_modules
 var request = require('request'); //Use 'npm install request'
 
