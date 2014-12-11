@@ -1,4 +1,4 @@
-//TODO: 1. add messages, 2. make cooldown, 3. make BAs bouncers
+//TODO: 1. make cooldown
 var PlugAPI = require('plugbotapi'); //Use 'git clone git@github.com:plugCubed/plugAPI.git' in your node_modules
 var request = require('request'); //Use 'npm install request'
 
@@ -32,8 +32,13 @@ var bouncerCommandsEnabled = true;
 var userCommandsEnabled = true;
 var autoskipEnabled = false;
 var lockdownEnabled = false;
+var isBA = false;
+var isAdmin = false;
+var waitlistLocked = null;
 var chatQueue = [];
 var waitlistArray = [];
+var waitlistUsernames = [];
+
 
 //Event which triggers when the bot joins the room
 bot.on('roomJoin', function(data) {
@@ -56,6 +61,9 @@ bot.on('roomJoin', function(data) {
     bot.getWaitList(function(plugWaitlist){
         waitlist = plugWaitlist;
         waitlistArray.push(waitlist);
+        for (var j=0; j<waitlist.length; j++){
+            waitlistUsernames.push(waitlist[j].username);
+        }
     });
     bot.getDJ(function(plugDJ){
         dj = plugDJ;
@@ -122,6 +130,9 @@ bot.on('waitListUpdate', function(data) {
         if (reinstatedStats != null){
             bot.moderateMoveDJ(reinstatedStats[0], reinstatedStats[1]);
             reinstatedStats = null;
+        }
+        for (var j=0; j<waitlist.length; j++){
+            waitlistUsernames.push(waitlist[j].username);
         }
     });
     bot.getStaff(function(plugStaff){
@@ -212,6 +223,16 @@ bot.on('userJoin', function(data) {
 //Event which triggers when anyone chats
 bot.on('chat', function(data) {
     //console.log(data);
+    for (var k=0; k<brandAmbassadors.length; k++){
+        if (brandAmbassadors[k].username == data.un){
+            isBA = true;
+        }
+    }
+    for (var l=0; l<admins.length; l++){
+        if (admins[l].username == data.un){
+            isAdmin = true;
+        }
+    }
     if (lockdownEnabled){
         var isInRoom = false;
         var isStaffMember = false;
@@ -416,7 +437,7 @@ bot.on('chat', function(data) {
         case "!bot": //Bot responds
         case ".bot":
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1){
+                if (staff[i].username == data.un && (staff[i].role > 1 || isBA || isAdmin)){
                     bot.chat("Well hey there! @"+data.un);
                 }
             }
@@ -424,7 +445,7 @@ bot.on('chat', function(data) {
         case "!ping": //Pong!
         case ".ping":
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1){
+                if (staff[i].username == data.un && (staff[i].role > 1 || isBA || isAdmin)){
                     bot.chat("pong!");
                 }
             }
@@ -432,7 +453,7 @@ bot.on('chat', function(data) {
         case "!skip": //Skips the current song
         case ".skip":
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1){
+                if (staff[i].username == data.un && (staff[i].role > 1 || isBA || isAdmin)){
                     bot.chat("Skipping!");
                     bot.moderateForceSkip(dj.id);
                 }
@@ -441,7 +462,7 @@ bot.on('chat', function(data) {
         case "!lockskip": //Skips the current song and sets the user back to the specified position 
         case ".lockskip":
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1){
+                if (staff[i].username == data.un && (staff[i].role > 1 || isBA || isAdmin)){
                     for (var j=0; j<users.length; j++){
                         if (users[j].username == dj.username){
                             lockskip = [dj.id, qualifier];
@@ -453,57 +474,87 @@ bot.on('chat', function(data) {
             }
             break;
         case "!add": //Adds a user to the waitlist
-        case ".add": //TODO add message if user is already in waitlist
+        case ".add": 
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1){
+                if (staff[i].username == data.un && (staff[i].role > 1 || isBA || isAdmin)){
                     for (var j=0; j<users.length; j++){
                         var spaceUsername = qualifier.slice(1).split(' ')[0] + " " + qualifier.slice(1).split(' ')[1];
                         if (users[j].username == qualifier.slice(1).split(' ')[0]){
-                            bot.moderateAddDJ(users[j].id);
+                            if (waitlistUsernames.indexOf(users[j].username) != -1){
+                                bot.chat("Sorry, but @" + users[j].username + " is already in the waitlist.")
+                            }
+                            else{
+                                bot.moderateAddDJ(users[j].id);
+                            }
                         }
                         else if (users[j].username == spaceUsername){
-                            bot.moderateAddDJ(users[j].id);
+                            if (waitlistUsernames.indexOf(users[j].username) != -1){
+                                bot.chat("Sorry, but @" + users[j].username + " is already in the waitlist.")
+                            }
+                            else{
+                                bot.moderateAddDJ(users[j].id);
+                            }
                         }
                     }
                 }
             }
             break;
         case "!remove": //Removes a user from the waitlist
-        case ".remove": //TODO: sends message when user isn't in waitlist
+        case ".remove": 
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1){
+                if (staff[i].username == data.un && (staff[i].role > 1 || isBA || isAdmin)){
                     for (var j=0; j<users.length; j++){
                         var spaceUsername = qualifier.slice(1).split(' ')[0] + " " + qualifier.slice(1).split(' ')[1];
                         if (users[j].username == qualifier.slice(1).split(' ')[0]){
-                            bot.moderateRemoveDJ(users[j].id);
+                            if (waitlistUsernames.indexOf(users[j].username) == -1){
+                                bot.chat("Sorry, but @" + users[j].username + " isn't in the waitlist.")
+                            }
+                            else{
+                                bot.moderateRemoveDJ(users[j].id);
+                            }
                         }
                         else if (users[j].username == spaceUsername){
-                            bot.moderateRemoveDJ(users[j].id);
+                            if (waitlistUsernames.indexOf(users[j].username) == -1){
+                                bot.chat("Sorry, but @" + users[j].username + " isn't in the waitlist.")
+                            }
+                            else{
+                                bot.moderateRemoveDJ(users[j].id);
+                            }
                         }
                     }
                 }
             }
             break;
         case "!move": //Moves a user in the waitlist with .move [givenUser], [givenSpot]
-        case ".move": //TODO: sends message when user isn't in waitlist
+        case ".move": 
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1){
+                if (staff[i].username == data.un && (staff[i].role > 1 || isBA || isAdmin)){
                     for (var j=0; j<users.length; j++){
                         var spaceUsername = qualifier.slice(1).split(' ')[0] + " " + qualifier.slice(1).split(' ')[1];
                         if (users[j].username == qualifier.slice(1).split(' ')[0]){
-                            if (Number(qualifier.slice(1).split(' ')[1]) > waitlist.length){
-                                bot.chat("Sorry, there are only " + waitlist.length + " people in the waitlist, please try again.");
+                            if (waitlistUsernames.indexOf(users[j].username) == -1){
+                                bot.chat("Sorry, but @" + users[j].username + " isn't in the waitlist.")
                             }
                             else{
-                                bot.moderateMoveDJ(users[j].id, Number(qualifier.slice(1).split(' ')[1]));
+                                if (Number(qualifier.slice(1).split(' ')[1]) > waitlist.length){
+                                    bot.chat("Sorry, there are only " + waitlist.length + " people in the waitlist, please try again.");
+                                }
+                                else{
+                                    bot.moderateMoveDJ(users[j].id, Number(qualifier.slice(1).split(' ')[1]));
+                                }
                             }
                         }
                         else if (users[j].username == spaceUsername){
-                            if (Number(qualifier.slice(1).split(' ')[2]) > waitlist.length){
-                                bot.chat("Sorry, there are only " + waitlist.length + " people in the waitlist, please try again.");
+                            if (waitlistUsernames.indexOf(users[j].username) == -1){
+                                bot.chat("Sorry, but @" + users[j].username + " isn't in the waitlist.")
                             }
                             else{
-                                bot.moderateMoveDJ(users[j].id, Number(qualifier.slice(1).split(' ')[2]));
+                                if (Number(qualifier.slice(1).split(' ')[2]) > waitlist.length){
+                                    bot.chat("Sorry, there are only " + waitlist.length + " people in the waitlist, please try again.");
+                                }
+                                else{
+                                    bot.moderateMoveDJ(users[j].id, Number(qualifier.slice(1).split(' ')[2]));
+                                }
                             }
                         }
                     }
@@ -511,25 +562,35 @@ bot.on('chat', function(data) {
             }
             break;
         case "!front": //Moves a user to the front of the waitlist with .front [givenUser]
-        case ".front": //TODO: sends message when user isn't in waitlist
+        case ".front": 
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1){
+                if (staff[i].username == data.un && (staff[i].role > 1 || isBA || isAdmin)){
                     for (var j=0; j<users.length; j++){
                         var spaceUsername = qualifier.slice(1).split(' ')[0] + " " + qualifier.slice(1).split(' ')[1];
                         if (users[j].username == qualifier.slice(1).split(' ')[0]){
-                            bot.moderateMoveDJ(users[j].id, 1);
+                            if (waitlistUsernames.indexOf(users[j].username) == -1){
+                                bot.chat("Sorry, but @" + users[j].username + " isn't in the waitlist.")
+                            }
+                            else{
+                                bot.moderateMoveDJ(users[j].id, 1);
+                            }
                         }
                         else if (users[j].username == spaceUsername){
-                            bot.moderateMoveDJ(users[j].id, 1);
+                            if (waitlistUsernames.indexOf(users[j].username) == -1){
+                                bot.chat("Sorry, but @" + users[j].username + " isn't in the waitlist.")
+                            }
+                            else{
+                                bot.moderateMoveDJ(users[j].id, 1);
+                            }
                         }
                     }
                 }
             }
             break;
         case "!swap": //Swaps two users' spots on the wait list
-        case ".swap": //TODO: sends message when user isn't in waitlist
+        case ".swap":
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1){
+                if (staff[i].username == data.un && (staff[i].role > 1 || isBA || isAdmin)){
                     var user1 = qualifier.split(/@(.+)?/)[1].slice(0, qualifier.split(/@(.+)?/)[1].indexOf("@") - 1);
                     var user2 = qualifier.split(/@(.+)?/)[1].slice(qualifier.split(/@(.+)?/)[1].indexOf("@") + 1);
                     user2 = user2.replace(/\s/g, '');
@@ -547,31 +608,63 @@ bot.on('chat', function(data) {
                             user2ID = waitlist[j].id;
                         }
                     }
-                    bot.moderateMoveDJ(user1ID, user2Spot);
-                    bot.moderateMoveDJ(user2ID, user1Spot);
+                    if (user1Spot == null){
+                        bot.chat("Sorry, but @" + user1 + " isn't in the waitlist.")
+                    }
+                    else if (user2Spot == null){
+                        bot.chat("Sorry, but @" + user2 + " isn't in the waitlist.")
+                    }
+                    else{
+                        bot.moderateMoveDJ(user1ID, user2Spot);
+                        bot.moderateMoveDJ(user2ID, user1Spot);
+                    }
                 }
             }
             break;
         case "!lock": //Locks the waitlist
-        case ".lock": //TODO: sends message when waitlist is already locked
+        case ".lock":
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1 && bouncerCommandsEnabled){
-                    bot.moderateLockWaitList(true, false);
+                if (staff[i].username == data.un && (staff[i].role > 1 || isBA || isAdmin) && bouncerCommandsEnabled){
+                    if (waitlistLocked == null){ 
+                        bot.moderateLockWaitList(true, false);
+                        waitlistLocked = true;
+                    }
+                    else{
+                        if (!(waitlistLocked)){
+                            bot.moderateLockWaitList(true, false);
+                            waitlistLocked = true;
+                        }
+                        else{
+                            bot.chat("Sorry, but the waitlist is already locked.")
+                        }
+                    }
                 }
             }
             break;
         case "!unlock": //Unlocks the waitlist
-        case ".unlock": //TODO: sends message when waitlist is already unlocked
+        case ".unlock":
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1){
-                    bot.moderateLockWaitList(false, false);
+                if (staff[i].username == data.un && (staff[i].role > 1 || isBA || isAdmin)){
+                    if (waitlistLocked == null){ 
+                        bot.moderateLockWaitList(false, false);
+                        waitlistLocked = false;
+                    }
+                    else{
+                        if (waitlistLocked){
+                            bot.moderateLockWaitList(false, false);
+                            waitlistLocked = false;
+                        }
+                        else{
+                            bot.chat("Sorry, but the waitlist is already unlocked.")
+                        }
+                    }
                 }
             }
             break;
         case "!settheme": //Sets the theme message
         case ".settheme":
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1 && bouncerCommandsEnabled){
+                if (staff[i].username == data.un && (staff[i].role > 1 || isBA || isAdmin) && bouncerCommandsEnabled){
                     theme = qualifier;
                     bot.chat("Theme now set to: " + theme);
                 }
@@ -580,7 +673,7 @@ bot.on('chat', function(data) {
         case "!delete": //Deletes all the user's messages from the chat
         case ".delete":
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1){
+                if (staff[i].username == data.un && (staff[i].role > 1 || isBA || isAdmin)){
                     for (var j=0; j<users.length; j++){
                         if (users[j].username == qualifier.slice(1).trim()){
                             for (var k=chatQueue.length - 1; k > -1; k--){
@@ -598,7 +691,7 @@ bot.on('chat', function(data) {
         case "!lockdown": //Toggles lockdown - Only staff can chat
         case ".lockdown": //TODO: needs previous messages deletion
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1 && bouncerCommandsEnabled){
+                if (staff[i].username == data.un && (staff[i].role > 1 || isBA || isAdmin) && bouncerCommandsEnabled){
                     if (lockdownEnabled){
                         lockdownEnabled = false;
                         bot.chat("Staff-only chat disabled.");
@@ -630,7 +723,7 @@ bot.on('chat', function(data) {
         case "!kick": //Kicks the user from the room for the selected time (hour/day)
         case ".kick": 
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1){
+                if (staff[i].username == data.un && (staff[i].role > 1 || isBA || isAdmin)){
                     for (var j=0; j<users.length; j++){
                         var spaceUsername = qualifier.slice(1).split(' ')[0] + " " + qualifier.slice(1).split(' ')[1];
                         if (users[j].username == qualifier.slice(1).split(' ')[0]){
@@ -662,7 +755,7 @@ bot.on('chat', function(data) {
         case "!mute": //Mutes the user for the selected time (15/30/45)
         case ".mute": 
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1){
+                if (staff[i].username == data.un && (staff[i].role > 1 || isBA || isAdmin)){
                     for (var j=0; j<users.length; j++){
                         var spaceUsername = qualifier.slice(1).split(' ')[0] + " " + qualifier.slice(1).split(' ')[1];
                         if (users[j].username == qualifier.slice(1).split(' ')[0]){
@@ -700,7 +793,7 @@ bot.on('chat', function(data) {
         case "!unmute": //Unmutes the user
         case ".unmute": 
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1){
+                if (staff[i].username == data.un && (staff[i].role > 1 || isBA || isAdmin)){
                     for (var j=0; j<users.length; j++){
                         if (users[j].username == qualifier.slice(1).trim()){
                             bot.moderateUnmuteUser(users[j].id);
@@ -712,41 +805,41 @@ bot.on('chat', function(data) {
         case "!status": //Displays some of DiscoverBot's settings
         case ".status": 
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 1){
-                    var userEnabled = ''
-                    var bouncerEnabled = ''
+                if (staff[i].username == data.un && (staff[i].role > 1 || isBA || isAdmin)){
+                    var userEnabled = '';
+                    var bouncerEnabled = '';
                     var lockEnabled = '';
                     var autoEnabled = '';
                     var currentTheme = '';
                     if (userCommandsEnabled){
-                        userEnabled = "ENABLED"
+                        userEnabled = "ENABLED";
                     }
                     else {
-                        userEnabled = "DISABLED"
+                        userEnabled = "DISABLED";
                     }
                     if (bouncerCommandsEnabled){
-                        bouncerEnabled = "ENABLED"
+                        bouncerEnabled = "ENABLED";
                     }
                     else {
-                        bouncerEnabled = "DISABLED"
+                        bouncerEnabled = "DISABLED";
                     }
                     if (lockdownEnabled){
-                        lockEnabled = "ENABLED"
+                        lockEnabled = "ENABLED";
                     }
                     else {
-                        lockEnabled = "DISABLED"
+                        lockEnabled = "DISABLED";
                     }
                     if (autoskipEnabled){
-                        autoEnabled = "ENABLED"
+                        autoEnabled = "ENABLED";
                     }
                     else {
-                        autoEnabled = "DISABLED"
+                        autoEnabled = "DISABLED";
                     }
                     if (theme == "nothing yet."){
-                        currentTheme = "None"
+                        currentTheme = "None";
                     }
                     else {
-                        currentTheme = theme
+                        currentTheme = theme;
                     }
                     bot.chat("User commands: " + userEnabled + ", Bouncer commands: " + bouncerEnabled + ", Chat lockdown: " + lockEnabled + ", Autoskip: " + autoEnabled + ", Current theme: " + currentTheme);
                 }
@@ -757,7 +850,7 @@ bot.on('chat', function(data) {
         case "!ban": //Permanently bans the user
         case ".ban": 
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 2){
+                if (staff[i].username == data.un && (staff[i].role > 2 || isBA || isAdmin)){
                     for (var j=0; j<users.length; j++){
                         if (users[j].username == qualifier.slice(1).trim()){
                             bot.moderateBanUser(users[j].id);
@@ -769,7 +862,7 @@ bot.on('chat', function(data) {
         case "!unban": //Unbans the user
         case ".unban": 
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 2){
+                if (staff[i].username == data.un && (staff[i].role > 2 || isBA || isAdmin)){
                     for (var j=0; j<users.length; j++){
                         if (users[j].username == qualifier.slice(1).trim()){
                             bot.moderateUnbanUser(users[j].id);
@@ -781,7 +874,7 @@ bot.on('chat', function(data) {
         case "!bouncer+": //Toggles on/off bouncer+ commands the bouncer+ commands
         case ".bouncer+": 
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 2){
+                if (staff[i].username == data.un && (staff[i].role > 2 || isBA || isAdmin)){
                     if (bouncerCommandsEnabled){
                         bouncerCommandsEnabled = false;
                         bot.chat("Bouncer commands disabled.");
@@ -796,7 +889,7 @@ bot.on('chat', function(data) {
         case "!user+": //Disables/Enables user commands
         case ".user+":
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 2){ 
+                if (staff[i].username == data.un && (staff[i].role > 2 || isBA || isAdmin)){ 
                     if (userCommandsEnabled){
                         userCommandsEnabled = false;
                         bot.chat("User commands disabled.");
@@ -811,7 +904,7 @@ bot.on('chat', function(data) {
         case "!autoskip": //Unbans the user
         case ".autoskip": 
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 2){ 
+                if (staff[i].username == data.un && (staff[i].role > 2 || isBA || isAdmin)){ 
                     if (autoskipEnabled){
                         autoskipEnabled = false;
                         bot.chat("Autoskip disabled.");
@@ -839,7 +932,7 @@ bot.on('chat', function(data) {
                 }
             }
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 2){
+                if (staff[i].username == data.un && (staff[i].role > 2 || isBA || isAdmin)){
                     for (var j=0; j<users.length; j++){
                         for (var k=chatQueue.length - 1; k > -1; k--){
                             if (users[j].id == chatQueue[k].slice(0, chatQueue[k].indexOf('-')) && brandAmbassadorUsernames.indexOf(users[j].username) == -1 && adminUsernames.indexOf(users[j].username) == -1 ){
@@ -856,7 +949,7 @@ bot.on('chat', function(data) {
         case "!join": //Makes the bot join the waitlist
         case ".join":
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 2){
+                if (staff[i].username == data.un && (staff[i].role > 2 || isBA || isAdmin)){
                     bot.djJoin();
                     bot.chat("Joining waitlist!");
                 }
@@ -865,7 +958,7 @@ bot.on('chat', function(data) {
         case "!leave": //Makes the bot leave the waitlist
         case ".leave":
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 2){
+                if (staff[i].username == data.un && (staff[i].role > 2 || isBA || isAdmin)){
                     bot.djLeave();
                     bot.chat("Leaving waitlist.");
                 }
@@ -876,7 +969,7 @@ bot.on('chat', function(data) {
         case "!blackout": //Mutes all non staff
         case ".blackout":
             for (var i=0; i<staff.length; i++){
-                if (staff[i].username == data.un && staff[i].role > 3){
+                if (staff[i].username == data.un && (staff[i].role > 3 || isBA || isAdmin)){
                     for (var j=0; j<users.length; j++){
                         if (users[j].role == 0){
                             bot.moderateMuteUser(users[j].id, 3, bot.API.MUTE.LONG);
