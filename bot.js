@@ -1,4 +1,4 @@
-//TODO: 1. add messages, 2. add comments, 3. fix !clearchat, 4. add !status, 5. make cooldown, 6. make BAs bouncers
+//TODO: 1. add messages, 2. make cooldown, 3. make BAs bouncers
 var PlugAPI = require('plugbotapi'); //Use 'git clone git@github.com:plugCubed/plugAPI.git' in your node_modules
 var request = require('request'); //Use 'npm install request'
 
@@ -6,7 +6,7 @@ var bot = new PlugAPI({
     "email": "badaskbros@gmail.com",
     "password": "xxx"
 });
-var ROOM = 'showcase';
+var ROOM = 'terminally-chillin';
 bot.connect(ROOM); // The part after https://plug.dj
 
 var reconnect = function() { 
@@ -249,25 +249,25 @@ bot.on('chat', function(data) {
             break;
 
         //User Commands
-        case "!theme":
+        case "!theme": //Explains the room's custom theme
         case ".theme":
             if (userCommandsEnabled){
                 bot.chat("We're using a custom theme for the event which is currently set to " + theme);
             }
             break;
-        case "!rules":
+        case "!rules": //Sends a link to the rules
         case ".rules":
             if (userCommandsEnabled){
                 bot.chat("Check out the room's rules here: http://rdjshowcase.net/rules");
             }
             break;
-        case "!commands":
+        case "!commands": //Sends a link to the bot commands
         case ".commands":
             if (userCommandsEnabled){
                 bot.chat("Check out my commands here: http://rdjshowcase.net/commands");
             }
             break;
-        case "!fb":
+        case "!fb": //Sends a link to plug.dj Facebook page
         case "!facebook":
         case ".fb":
         case ".facebook":
@@ -275,25 +275,25 @@ bot.on('chat', function(data) {
                 bot.chat("Check out plug's Facebook here: https://www.facebook.com/plugdj");
             }
             break;
-        case "!twitter":
+        case "!twitter": //Sends a link to the plug.dj Twitter page
         case ".twitter":
             if (userCommandsEnabled){
                 bot.chat("Check out plug's Twitter here: https://twitter.com/plugdj");
             }
             break;
-        case "!support":
+        case "!support": //Sends a link to plug.dj support
         case ".support":
             if (userCommandsEnabled){
                 bot.chat("For plug's support, go here: http://support.plug.dj/");
             }
             break;
-        case "!blog":
+        case "!blog": //Sends a link to the plug.dj blog
         case ".blog":
             if (userCommandsEnabled){
                 bot.chat("For plug's blog, go here: http://blog.plug.dj/");
             }
             break;
-        case "!soundcloud":
+        case "!soundcloud": //Sends a link to the DJ's Soundcloud
         case ".soundcloud":
             if (userCommandsEnabled){
                 var link = 'http://api.soundcloud.com/users.json?q=' + dj.username + '&consumer_key=apigee';
@@ -307,31 +307,31 @@ bot.on('chat', function(data) {
                 });
             }
             break;
-        case "!website":
+        case "!website": //Sends a link to the Showcase website
         case ".website":
             if (userCommandsEnabled){
                 bot.chat("Check out our website here: http://rdjshowcase.net/");
             }
             break;
-        case "!register":
+        case "!register": //Sends a link of where to register for the Showcase event.
         case ".register":
             if (userCommandsEnabled){
                 bot.chat("Register for the Showcase here: http://rdjshowcase.net/register");
             }
             break;
-        case "!lateregister":
+        case "!lateregister": //Sends a link of where to register if you show up during the event but still want to play
         case ".lateregister":
             if (userCommandsEnabled){
                 bot.chat("Currently there is no late registry.");
             }
             break;
-        case "!info":
+        case "!info": //Sends a link about the Showcase event's info
         case ".info":
             if (userCommandsEnabled){
                 bot.chat("For info on Showcase, go here: http://rdjshowcase.net/event");
             }
-            break;
-        case "!afk":
+            break; 
+        case "!afk": //Sets an AFK auto-reply message for yourself
         case ".afk":
             if (userCommandsEnabled){
                 bot.setStatus(qualifier, function() {
@@ -340,7 +340,7 @@ bot.on('chat', function(data) {
                 });
             }
             break;
-        case "!back":
+        case "!back": //Announces to the community that the user is back
         case ".back":
             if (userCommandsEnabled){
                 delete afkList[data.un];
@@ -349,7 +349,7 @@ bot.on('chat', function(data) {
             break;
 
         //Res DJ+ Commands
-        case "!rdj":
+        case "!rdj": //Explains how to get Resident DJ
         case "!resdj":
         case "!residentdj":
         case ".rdj":
@@ -361,7 +361,7 @@ bot.on('chat', function(data) {
                 }
             }
             break;
-        case "!event":
+        case "!event": //Explains what the event is
         case ".event":
             for (var i=0; i<staff.length; i++){
                 if (staff[i].username == data.un && staff[i].role > 0){
@@ -369,7 +369,7 @@ bot.on('chat', function(data) {
                 }
             }
             break;
-        case "!ba":
+        case "!ba": //Explains what a Brand Ambassador is
         case "!brandambassador":
         case ".ba":
         case ".brandambassador":
@@ -379,7 +379,7 @@ bot.on('chat', function(data) {
                 }
             }
             break;
-        case "!basoundcloud":
+        case "!basoundcloud": //Sends a link to the BA's Soundcloud
         case ".basoundcloud":
             for (var i=0; i<staff.length; i++){
                 if (staff[i].username == data.un && staff[i].role > 0){
@@ -387,7 +387,7 @@ bot.on('chat', function(data) {
                 }
             }
             break;
-        case "!admin":
+        case "!admin": //Explains what an Admin is
         case ".admin":
             for (var i=0; i<staff.length; i++){
                 if (staff[i].username == data.un && staff[i].role > 0){
@@ -395,7 +395,7 @@ bot.on('chat', function(data) {
                 }
             }
             break;
-        case "!waitlist":
+        case "!waitlist": //Explains how to get on the wait list
         case ".waitlist":
             for (var i=0; i<staff.length; i++){
                 if (staff[i].username == data.un && staff[i].role > 0){
@@ -403,7 +403,7 @@ bot.on('chat', function(data) {
                 }
             }
             break;
-        case "!staff":
+        case "!staff": //Explains how to get staff
         case ".staff":
             for (var i=0; i<staff.length; i++){
                 if (staff[i].username == data.un && staff[i].role > 0){
@@ -413,7 +413,7 @@ bot.on('chat', function(data) {
             break;
 
         //Bouncer+ Commands
-        case "!bot":
+        case "!bot": //Bot responds
         case ".bot":
             for (var i=0; i<staff.length; i++){
                 if (staff[i].username == data.un && staff[i].role > 1){
@@ -421,7 +421,7 @@ bot.on('chat', function(data) {
                 }
             }
             break;
-        case "!ping":
+        case "!ping": //Pong!
         case ".ping":
             for (var i=0; i<staff.length; i++){
                 if (staff[i].username == data.un && staff[i].role > 1){
@@ -429,7 +429,7 @@ bot.on('chat', function(data) {
                 }
             }
             break;
-        case "!skip": //Makes the bot skip the current song
+        case "!skip": //Skips the current song
         case ".skip":
             for (var i=0; i<staff.length; i++){
                 if (staff[i].username == data.un && staff[i].role > 1){
@@ -577,7 +577,7 @@ bot.on('chat', function(data) {
                 }
             }
             break;
-        case "!delete":
+        case "!delete": //Deletes all the user's messages from the chat
         case ".delete":
             for (var i=0; i<staff.length; i++){
                 if (staff[i].username == data.un && staff[i].role > 1){
@@ -595,8 +595,8 @@ bot.on('chat', function(data) {
                 }
             }
             break;
-        case "!lockdown": //TODO: needs previous messages deletion
-        case ".lockdown": 
+        case "!lockdown": //Toggles lockdown - Only staff can chat
+        case ".lockdown": //TODO: needs previous messages deletion
             for (var i=0; i<staff.length; i++){
                 if (staff[i].username == data.un && staff[i].role > 1 && bouncerCommandsEnabled){
                     if (lockdownEnabled){
@@ -709,6 +709,49 @@ bot.on('chat', function(data) {
                 }
             }
             break;
+        case "!status": //Displays some of DiscoverBot's settings
+        case ".status": 
+            for (var i=0; i<staff.length; i++){
+                if (staff[i].username == data.un && staff[i].role > 1){
+                    var userEnabled = ''
+                    var bouncerEnabled = ''
+                    var lockEnabled = '';
+                    var autoEnabled = '';
+                    var currentTheme = '';
+                    if (userCommandsEnabled){
+                        userEnabled = "ENABLED"
+                    }
+                    else {
+                        userEnabled = "DISABLED"
+                    }
+                    if (bouncerCommandsEnabled){
+                        bouncerEnabled = "ENABLED"
+                    }
+                    else {
+                        bouncerEnabled = "DISABLED"
+                    }
+                    if (lockdownEnabled){
+                        lockEnabled = "ENABLED"
+                    }
+                    else {
+                        lockEnabled = "DISABLED"
+                    }
+                    if (autoskipEnabled){
+                        autoEnabled = "ENABLED"
+                    }
+                    else {
+                        autoEnabled = "DISABLED"
+                    }
+                    if (theme == "nothing yet."){
+                        currentTheme = "None"
+                    }
+                    else {
+                        currentTheme = theme
+                    }
+                    bot.chat("User commands: " + userEnabled + ", Bouncer commands: " + bouncerEnabled + ", Chat lockdown: " + lockEnabled + ", Autoskip: " + autoEnabled + ", Current theme: " + currentTheme);
+                }
+            }
+            break;
 
         //Manager+ Commands
         case "!ban": //Permanently bans the user
@@ -782,12 +825,13 @@ bot.on('chat', function(data) {
             break;
         case "!clearchat": //Clears the entire chat except for BA and Admin comments
         case ".clearchat": 
-            var isAdmin = false;
-            var isBA = false;
+            var brandAmbassadorUsernames = []
+            for (var j=0; j<brandAmbassadors.length; j++){
+                brandAmbassadorUsernames.push(brandAmbassadors[j].username);
+            }
+            var adminUsernames = []
             for (var j=0; j<admins.length; j++){
-                if (admins[j].username == data.un){
-                    isAdmin = true;
-                }
+                adminUsernames.push(admins[j].username);
             }
             for (var k=0; k<brandAmbassadors.length; k++){
                 if (brandAmbassadors[k].username == data.un){
@@ -797,17 +841,15 @@ bot.on('chat', function(data) {
             for (var i=0; i<staff.length; i++){
                 if (staff[i].username == data.un && staff[i].role > 2){
                     for (var j=0; j<users.length; j++){
-                        if (!(isAdmin) && !(isBA)){
-                            for (var k=chatQueue.length - 1; k > -1; k--){
-                                if (users[j].id == chatQueue[k].slice(0, chatQueue[k].indexOf('-'))){
-                                    bot.moderateDeleteChat(chatQueue[k]);
-                                    chatQueue.splice(k, 1);
-                                    k = k + 1;
-                                }
+                        for (var k=chatQueue.length - 1; k > -1; k--){
+                            if (users[j].id == chatQueue[k].slice(0, chatQueue[k].indexOf('-')) && brandAmbassadorUsernames.indexOf(users[j].username) == -1 && adminUsernames.indexOf(users[j].username) == -1 ){
+                                bot.moderateDeleteChat(chatQueue[k]);
+                                chatQueue.splice(k, 1);
+                                k = k + 1;
                             }
                         }
                     }
-                    break;
+                    i = staff.length;
                 }
             }
             break;
