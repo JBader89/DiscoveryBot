@@ -6,7 +6,7 @@ var bot = new PlugAPI({
     "email": "badaskbros@gmail.com",
     "password": "xxx"
 });
-var ROOM = 'terminally-chillin';
+var ROOM = 'showcase';
 bot.connect(ROOM); // The part after https://plug.dj
 
 var reconnect = function() { 
@@ -131,6 +131,7 @@ bot.on('waitListUpdate', function(data) {
             bot.moderateMoveDJ(reinstatedStats[0], reinstatedStats[1]);
             reinstatedStats = null;
         }
+        waitlistUsernames = [];
         for (var j=0; j<waitlist.length; j++){
             waitlistUsernames.push(waitlist[j].username);
         }
@@ -918,27 +919,13 @@ bot.on('chat', function(data) {
             break;
         case "!clearchat": //Clears the entire chat except for BA and Admin comments
         case ".clearchat": 
-            var brandAmbassadorUsernames = []
-            for (var j=0; j<brandAmbassadors.length; j++){
-                brandAmbassadorUsernames.push(brandAmbassadors[j].username);
-            }
-            var adminUsernames = []
-            for (var j=0; j<admins.length; j++){
-                adminUsernames.push(admins[j].username);
-            }
-            for (var k=0; k<brandAmbassadors.length; k++){
-                if (brandAmbassadors[k].username == data.un){
-                    isBA = true;
-                }
-            }
             for (var i=0; i<staff.length; i++){
                 if (staff[i].username == data.un && (staff[i].role > 2 || isBA || isAdmin)){
                     for (var j=0; j<users.length; j++){
                         for (var k=chatQueue.length - 1; k > -1; k--){
-                            if (users[j].id == chatQueue[k].slice(0, chatQueue[k].indexOf('-')) && brandAmbassadorUsernames.indexOf(users[j].username) == -1 && adminUsernames.indexOf(users[j].username) == -1 ){
+                            if (users[j].id == chatQueue[k].slice(0, chatQueue[k].indexOf('-'))){
                                 bot.moderateDeleteChat(chatQueue[k]);
                                 chatQueue.splice(k, 1);
-                                k = k + 1;
                             }
                         }
                     }
